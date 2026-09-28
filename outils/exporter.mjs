@@ -25,10 +25,24 @@ const donnees = {
   }))
 };
 
+const deriver = (s, usage) => crypto.subtle.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"])
+  .then(b => crypto.subtle.deriveKey({ name: "PBKDF2", salt: s, iterations: 250000, hash: "SHA-256" }, b, { name: "AES-GCM", length: 256 }, false, [usage]));
+
+// Ne rien réécrire si les chiffres n'ont pas changé depuis le dernier export.
+if (existsSync(out)) {
+  try {
+    const f = JSON.parse(readFileSync(out, "utf8"));
+    const un = s => Buffer.from(s, "base64");
+    const avant = JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: un(f.iv) }, await deriver(un(f.sel), "decrypt"), un(f.data))));
+    const sans = d => JSON.stringify({ ...d, exporteLe: null });
+    if (sans(avant) === sans(donnees)) { console.log("inchangé"); process.exit(0); }
+  } catch (e) { /* ancien fichier illisible : on le remplace */ }
+}
+
 const sel = crypto.getRandomValues(new Uint8Array(16));
 const iv = crypto.getRandomValues(new Uint8Array(12));
-const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]);
-const cle = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: sel, iterations: 250000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt"]);
+
+const cle = await deriver(sel, "encrypt");
 const chiffre = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, cle, new TextEncoder().encode(JSON.stringify(donnees)));
 const b64 = u => Buffer.from(u).toString("base64");
 writeFileSync(out, JSON.stringify({ v: 1, sel: b64(sel), iv: b64(iv), data: b64(new Uint8Array(chiffre)) }) + "\n");
