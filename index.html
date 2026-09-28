@@ -76,6 +76,52 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
 .rtab{flex:1;height:44px;border:0;border-radius:11px;background:transparent;font-weight:600;font-size:16px;cursor:pointer;color:var(--ink-2)}
 .rtab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Design coloré, identique à l'appli principale */
+:root{ --bg:#f1f4f8; --line:#e2e7ee;
+  --p0:#2563c9; --p1:#d9482b; --p2:#15855f; --p3:#8a3fc4; --p4:#c27a00; --p5:#c2336e; --p6:#0e7ea3; --p7:#5f7d12;
+  --neg:#c93a3a; --h1:#0f4c8a; --h2:#15805c; --r:#1d5fae; }
+@media (prefers-color-scheme: dark){ :root{ color-scheme:dark; --bg:#0f1318;
+  --p0:#6d9ff0; --p1:#f08a6f; --p2:#4cc59a; --p3:#bf8cf0; --p4:#f0b54a; --p5:#f07aa9; --p6:#4fc0e3; --p7:#a6c955; --neg:#ef8080; --r:#6ea6ec; }
+  body[data-region="guadeloupe"]{ --r:#3cc7cd !important; } }
+body[data-region="guadeloupe"]{ --h1:#08747b; --h2:#cf4d33; --r:#0a7f87; }
+body{ --blue:var(--r); }
+.wrap{padding-top:16px}
+.hero{background:radial-gradient(circle at 100% 0%,color-mix(in srgb, var(--h2) 75%, transparent) 0%,transparent 58%),linear-gradient(160deg,var(--h1),color-mix(in srgb, var(--h1) 78%, #000));color:#fff;border-radius:26px;padding:22px 20px 20px;margin:0 0 18px;box-shadow:0 10px 28px -14px var(--h1)}
+.hero h1{color:#fff;font-size:28px}
+.hero .date{color:rgba(255,255,255,.82);margin:2px 0 14px}
+.rtabs{display:flex;gap:6px;border-radius:14px;padding:4px;background:rgba(255,255,255,.16);margin:0 0 20px}
+.rtab{flex:1;height:44px;border:0;border-radius:11px;background:transparent;font-weight:600;font-size:16px;cursor:pointer;color:rgba(255,255,255,.9)}
+.rtab[aria-selected="true"]{background:#fff;color:var(--h1);box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.rtab:focus-visible{outline-color:#fff}
+.hs-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.hs-l{margin:0;font-size:15px;font-weight:600;color:rgba(255,255,255,.9)}
+.hs-l small{display:block;font-weight:500;font-size:13px;opacity:.85}
+.hs-v{margin:0;font-family:"Bricolage Grotesque","Figtree",sans-serif;font-weight:700;font-size:64px;line-height:.9;font-variant-numeric:tabular-nums lining-nums}
+.hero .meter{background:rgba(255,255,255,.22);height:12px;border-radius:6px;margin-top:16px;overflow:hidden}
+.hero .meter span{display:block;height:100%;background:#fff;border-radius:6px}
+.hs-s{margin:8px 0 0;font-size:13px;color:rgba(255,255,255,.88)}
+.kpis{gap:10px;margin-bottom:8px}
+.kpi{border:0;border-radius:18px;background:color-mix(in srgb, var(--c) 11%, var(--card))}
+.kpi .l{display:flex;align-items:center;gap:7px;font-weight:500}
+.kpi .l::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.kpi .v{color:var(--c);font-weight:700;font-size:32px}
+.h2row{display:flex;align-items:center;justify-content:space-between;margin:28px 2px 12px}
+.h2row h2{margin:0;font-size:21px}
+.card{border-radius:22px;padding:4px 18px;box-shadow:0 1px 2px rgba(15,25,40,.05)}
+.row{padding:16px 0}
+.row .av,.group .av{background:color-mix(in srgb, var(--c) 16%, var(--card));color:var(--c);font-weight:700}
+.row .n{color:var(--c);font-weight:700}
+.bar{height:9px;border-radius:5px;background:color-mix(in srgb, var(--c) 12%, var(--track))}
+.bar span{background:var(--c);border-radius:5px}
+.stats{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0 50px}
+.st{font-size:13px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--track);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.st.main{background:color-mix(in srgb, var(--c) 13%, var(--card));color:var(--c)}
+.st.neg{background:color-mix(in srgb, var(--neg) 14%, var(--card));color:var(--neg)}
+.total .n{color:var(--r);font-weight:700}
+.group .count{background:color-mix(in srgb, var(--c) 12%, var(--card));color:var(--c);font-weight:600;font-size:13px;border-radius:999px;padding:2px 10px}
+.dl{border-left:2px solid color-mix(in srgb, var(--c) 35%, transparent);margin-left:18px;padding-left:22px}
+.none{margin:14px 0;font-size:15px;color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -152,29 +198,33 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
   const stDe = L => L.reduce((a,d) => a + nbSt(d), 0);
   const quand = iso => { const d = iso ? new Date(iso) : null; return d && !isNaN(d) ? d : null; };
 
+  const PAL = ["--p0","--p1","--p2","--p3","--p4","--p5","--p6","--p7"];
+  function colDe(id){ const ids = eqR().map(p => p.id).sort(); const i = ids.indexOf(id); return i < 0 ? "--muted" : PAL[i % PAL.length]; }
   function render(){
     const eq = eqR().sort((a,b) => b.donnes - a.donnes || a.nom.localeCompare(b.nom,"fr"));
     const recus = Number(depR().recus) || 0, distribues = eq.reduce((a,p) => a + p.donnes, 0), poses = stDe(dosR());
     const pct = recus ? distribues / recus * 100 : 0;
     const maj = quand(depR().majLe) || quand(D.exporteLe);
-    const kpi = (l,v) => '<div class="kpi"><p class="l">'+l+'</p><p class="v">'+v+'</p></div>';
-    let h = '<h1>Suivi des gonfleurs</h1><div class="rtabs" role="tablist" aria-label="Région">' + REGIONS.map(r => '<button type="button" class="rtab" role="tab" data-reg="'+r.id+'" aria-selected="'+(r.id===R)+'">'+esc(r.nom)+'</button>').join("") + '</div><p class="date">' + (maj ? "Mis à jour le " + maj.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + " à " + maj.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : "") + '</p>';
-    h += '<section class="kpis" aria-label="Résumé">' + kpi("Reçus au dépôt",recus) + kpi("Distribués",distribues) + kpi("Stations posées",poses) + kpi("Encore en main",distribues - poses) + '</section>';
-    h += '<section class="stock" aria-label="Stock restant"><div class="top"><p class="l">Reste au dépôt</p><p class="v">'+(recus - distribues)+'</p></div>'
+    document.body.dataset.region = R;
+    const regNomR = (REGIONS.find(r => r.id === R) || {}).nom || "";
+    const kpi = (l,v,c) => '<div class="kpi" style="--c:var('+c+')"><p class="l">'+l+'</p><p class="v">'+v+'</p></div>';
+    let h = '<header class="hero"><h1>Suivi des gonfleurs</h1><p class="date">' + (maj ? "Mis à jour le " + maj.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + " à " + maj.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : "") + '</p>'
+      + '<div class="rtabs" role="tablist" aria-label="Région">' + REGIONS.map(r => '<button type="button" class="rtab" role="tab" data-reg="'+r.id+'" aria-selected="'+(r.id===R)+'">'+esc(r.nom)+'</button>').join("") + '</div>'
+      + '<div class="hs-top"><p class="hs-l">Reste au dépôt<small>'+esc(regNomR)+'</small></p><p class="hs-v">'+(recus - distribues)+'</p></div>'
       + '<div class="meter" role="img" aria-label="'+fr1(pct)+' % distribués"><span style="width:'+Math.min(100,pct).toFixed(1)+'%"></span></div>'
-      + '<p class="s">'+fr1(pct)+' % distribué, '+fr1(Math.max(0,100-pct))+' % encore en stock</p></section>';
+      + '<p class="hs-s">'+fr1(pct)+' % distribué, '+fr1(Math.max(0,100-pct))+' % encore en stock</p></header>';
+    h += '<section class="kpis" aria-label="Résumé">' + kpi("Reçus au dépôt",recus,"--p0") + kpi("Distribués",distribues,"--p3") + kpi("Stations posées",poses,"--p2") + kpi("Encore en main",distribues - poses,"--p4") + '</section>';
     const max = Math.max(1, ...eq.map(p => p.donnes));
-    h += '<section class="card" aria-label="Répartition par personne"><div class="head"><span>Personne</span><span>Gonfleurs et part du total</span></div>';
+    h += '<div class="h2row"><h2>Équipe</h2><span class="count">'+plur(eq.length,"poseur")+'</span></div><section class="card" aria-label="Répartition par personne">';
     eq.forEach(p => {
-      const L = dosR().filter(d => d.poseur === p.id), n = L.length, s = stDe(L);
-      const sub = !n ? "Aucun dossier posé pour l'instant"
-        : s === n ? plur(n,"dossier")+" "+(n>1?"posés":"posé")+", "+(p.donnes-n)+" encore en main"
-        : plur(n,"dossier")+", "+s+" stations posées, "+(p.donnes-s)+" encore en main";
-      h += '<div class="row"><div class="top2"><div class="av" aria-hidden="true">'+esc(p.nom.charAt(0).toUpperCase())+'</div><span class="name">'+esc(p.nom)+'</span><span class="n">'+p.donnes+'</span><span class="pct">'+(recus?fr1(p.donnes/recus*100):"0,0")+' %</span></div>'
-        + '<div class="bar"><span style="width:'+(p.donnes/max*100).toFixed(1)+'%"></span></div><p class="sub">'+sub+'</p></div>';
+      const L = dosR().filter(d => d.poseur === p.id), n = L.length, s = stDe(L), reste = p.donnes - s;
+      const stats = '<span class="st">'+(n ? plur(n,"dossier") : "Aucun dossier")+'</span>' + (s !== n ? '<span class="st">'+s+' stations</span>' : '') + '<span class="st '+(reste < 0 ? "neg" : "main")+'">'+reste+' en main</span>';
+      h += '<div class="row" style="--c:var('+colDe(p.id)+')"><div class="top2"><div class="av" aria-hidden="true">'+esc(p.nom.charAt(0).toUpperCase())+'</div><span class="name">'+esc(p.nom)+'</span><span class="n">'+p.donnes+'</span><span class="pct">'+(recus?fr1(p.donnes/recus*100):"0,0")+' %</span></div>'
+        + '<div class="bar"><span style="width:'+(p.donnes/max*100).toFixed(1)+'%"></span></div><div class="stats">'+stats+'</div></div>';
     });
+    if (!eq.length) h += '<p class="none">Aucun poseur pour l\'instant.</p>';
     h += '<div class="total"><span class="t">Total distribué</span><span class="n">'+distribues+' <small>/ '+recus+'</small></span></div></section>';
-    h += '<h2>Dossiers posés</h2><label class="sr" for="q">Rechercher un dossier</label><input class="search" id="q" type="search" placeholder="Rechercher un dossier" autocomplete="off">';
+    h += '<div class="h2row"><h2>Dossiers posés</h2></div><label class="sr" for="q">Rechercher un dossier</label><input class="search" id="q" type="search" placeholder="Rechercher un dossier" autocomplete="off">';
     h += '<section class="card" id="dossiers" aria-label="Dossiers posés par personne"></section>';
     h += '<button type="button" class="out" id="out">Se déconnecter</button>';
     $("app").innerHTML = h;
@@ -188,7 +238,7 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
     const q = norm($("q").value);
     const eq = eqR().sort((a,b) => b.donnes - a.donnes || a.nom.localeCompare(b.nom,"fr"));
     const ids = new Set(eq.map(p => p.id));
-    const groups = eq.map(p => ({ nom:p.nom, list:dosR().filter(d => d.poseur === p.id) }));
+    const groups = eq.map(p => ({ id:p.id, nom:p.nom, list:dosR().filter(d => d.poseur === p.id) }));
     const autres = dosR().filter(d => !ids.has(d.poseur));
     if (autres.length) groups.push({ nom:"Autre", list:autres });
     let h = "", vu = 0;
@@ -197,7 +247,7 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
         .sort((a,b) => String(b.poseLe||"").localeCompare(String(a.poseLe||"")));
       if (q && !L.length) return;
       vu++;
-      h += '<div class="group"><div class="top2"><div class="av" aria-hidden="true">'+esc(g.nom.charAt(0).toUpperCase())+'</div><span class="name">'+esc(g.nom)+'</span><span class="count">'+plur(g.list.length,"dossier")+'</span></div>';
+      h += '<div class="group" style="--c:var('+(g.id ? colDe(g.id) : "--muted")+')"><div class="top2"><div class="av" aria-hidden="true">'+esc(g.nom.charAt(0).toUpperCase())+'</div><span class="name">'+esc(g.nom)+'</span><span class="count">'+plur(g.list.length,"dossier")+'</span></div>';
       if (!L.length) h += '<p class="empty">Aucun dossier</p>';
       else h += '<ul class="dl">' + L.map(d => {
         const bits = [], dt = quand(d.poseLe);
