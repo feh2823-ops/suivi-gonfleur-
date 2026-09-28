@@ -122,6 +122,12 @@ body{ --blue:var(--r); }
 .group .count{background:color-mix(in srgb, var(--c) 12%, var(--card));color:var(--c);font-weight:600;font-size:13px;border-radius:999px;padding:2px 10px}
 .dl{border-left:2px solid color-mix(in srgb, var(--c) 35%, transparent);margin-left:18px;padding-left:22px}
 .none{margin:14px 0;font-size:15px;color:var(--ink-2)}
+.fixbox{background:color-mix(in srgb, var(--p4) 9%, var(--card));border:1px solid color-mix(in srgb, var(--p4) 30%, transparent);border-radius:22px;padding:6px 18px 10px;margin-top:18px}
+.fixbox h2{color:var(--p4)}
+.fx{padding:10px 0;border-top:1px dashed color-mix(in srgb, var(--p4) 30%, transparent);overflow-wrap:anywhere}
+.fx:first-of-type{border-top:0}
+.fx b{display:block;font-weight:600}.fx small{display:block;font-size:13px;color:var(--ink-2)}.fx em{display:block;font-style:normal;font-size:14px;margin-top:2px}
+.tag{display:inline-block;margin-left:6px;font-size:12px;font-weight:600;border-radius:999px;padding:1px 8px;background:color-mix(in srgb, var(--p4) 16%, var(--card));color:var(--p4);vertical-align:1px}
 </style>
 </head>
 <body>
@@ -215,6 +221,9 @@ body{ --blue:var(--r); }
       + '<p class="hs-s">'+fr1(pct)+' % distribué, '+fr1(Math.max(0,100-pct))+' % encore en stock</p></header>';
     h += '<section class="kpis" aria-label="Résumé">' + kpi("Reçus au dépôt",recus,"--p0") + kpi("Distribués",distribues,"--p3") + kpi("Stations posées",poses,"--p2") + kpi("Encore en main",distribues - poses,"--p4") + '</section>';
     const max = Math.max(1, ...eq.map(p => p.donnes));
+    const fix = dosR().filter(d => d.aModifier).sort((a,b) => String(b.aModifierLe||"").localeCompare(String(a.aModifierLe||"")));
+    if (fix.length) h += '<section class="fixbox" aria-label="Dossiers à modifier"><div class="h2row" style="margin:12px 0 4px"><h2>À modifier</h2><span class="count">'+plur(fix.length,"dossier")+'</span></div>'
+      + fix.map(d => '<div class="fx"><b>'+esc(d.nom)+'</b><small>'+esc((D.equipe.find(p => p.id === d.poseur)||{}).nom || "")+'</small>'+(d.aModifierNote ? '<em>'+esc(d.aModifierNote)+'</em>' : '')+'</div>').join("") + '</section>';
     h += '<div class="h2row"><h2>Équipe</h2><span class="count">'+plur(eq.length,"poseur")+'</span></div><section class="card" aria-label="Répartition par personne">';
     eq.forEach(p => {
       const L = dosR().filter(d => d.poseur === p.id), n = L.length, s = stDe(L), reste = p.donnes - s;
@@ -255,7 +264,7 @@ body{ --blue:var(--r); }
         if (dt) bits.push("posé le " + dt.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}));
         if (d.lieu) bits.push("à " + d.lieu);
         const s = bits.join(", ");
-        return '<li>'+esc(d.nom)+(s ? '<small>'+esc(s.charAt(0).toUpperCase()+s.slice(1))+'</small>' : '')+'</li>';
+        return '<li>'+esc(d.nom)+(d.aModifier ? '<span class="tag">À modifier</span>' : '')+(s ? '<small>'+esc(s.charAt(0).toUpperCase()+s.slice(1))+'</small>' : '')+'</li>';
       }).join("") + '</ul>';
       h += '</div>';
     });

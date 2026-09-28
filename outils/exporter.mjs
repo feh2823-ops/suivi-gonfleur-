@@ -26,7 +26,8 @@ const donnees = {
   // Seulement ce que les collaborateurs doivent voir : pas de photos ni d'identifiants Drive.
   dossiers: col("dossiers").map(d => ({
     nom: String(d.nom || ""), poseur: d.poseur || "", region: d.region || "corse", stations: Math.max(1, parseInt(d.stations, 10) || 1),
-    lieu: d.lieu || "", poseLe: d.poseLe || d.ajouteLe || null, certif: d.certif || ""
+    lieu: d.lieu || "", poseLe: d.poseLe || d.ajouteLe || null, certif: d.certif || "",
+    aModifier: !!d.aModifier, aModifierNote: d.aModifier ? String(d.aModifierNote || "") : "", aModifierLe: d.aModifier ? d.aModifierLe || null : null
   }))
 };
 
