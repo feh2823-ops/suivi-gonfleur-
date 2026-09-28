@@ -12,15 +12,20 @@ if (!src || !code) { console.error("Usage : CODE=xxxx node outils/exporter.mjs <
 const lire = f => { const j = JSON.parse(readFileSync(f, "utf8")); return j.data ?? j; };
 const col = n => { const d = join(src, n); return existsSync(d) ? readdirSync(d).filter(f => f.endsWith(".json")).map(f => ({ id: f.replace(/\.json$/, ""), ...lire(join(d, f)) })) : []; };
 
-const depot = existsSync(join(src, "config", "depot.json")) ? lire(join(src, "config", "depot.json")) : {};
+// Une région par onglet ; sans champ « region », c'est la Corse (stock dans config/depot).
+const REGIONS = [["corse", "depot"], ["guadeloupe", "depot-guadeloupe"]];
+const regions = {};
+for (const [r, f] of REGIONS) {
+  const d = existsSync(join(src, "config", f + ".json")) ? lire(join(src, "config", f + ".json")) : {};
+  regions[r] = { recus: Number(d.recus) || 0, majLe: d.majLe || null };
+}
 const donnees = {
-  recus: Number(depot.recus) || 0,
-  majLe: depot.majLe || null,
+  regions,
   exporteLe: new Date().toISOString(),
-  equipe: col("equipe").map(p => ({ id: p.id, nom: String(p.nom || p.id), donnes: Number(p.donnes) || 0 })),
+  equipe: col("equipe").map(p => ({ id: p.id, nom: String(p.nom || p.id), donnes: Number(p.donnes) || 0, region: p.region || "corse" })),
   // Seulement ce que les collaborateurs doivent voir : pas de photos ni d'identifiants Drive.
   dossiers: col("dossiers").map(d => ({
-    nom: String(d.nom || ""), poseur: d.poseur || "", stations: Math.max(1, parseInt(d.stations, 10) || 1),
+    nom: String(d.nom || ""), poseur: d.poseur || "", region: d.region || "corse", stations: Math.max(1, parseInt(d.stations, 10) || 1),
     lieu: d.lieu || "", poseLe: d.poseLe || d.ajouteLe || null, certif: d.certif || ""
   }))
 };
@@ -46,4 +51,4 @@ const cle = await deriver(sel, "encrypt");
 const chiffre = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, cle, new TextEncoder().encode(JSON.stringify(donnees)));
 const b64 = u => Buffer.from(u).toString("base64");
 writeFileSync(out, JSON.stringify({ v: 1, sel: b64(sel), iv: b64(iv), data: b64(new Uint8Array(chiffre)) }) + "\n");
-console.log(`${out} : ${donnees.equipe.length} personnes, ${donnees.dossiers.length} dossiers, ${donnees.recus} reçus`);
+console.log(`${out} : ${donnees.equipe.length} personnes, ${donnees.dossiers.length} dossiers, ` + REGIONS.map(([r]) => `${regions[r].recus} reçus ${r}`).join(", "));

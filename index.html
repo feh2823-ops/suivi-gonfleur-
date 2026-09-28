@@ -72,6 +72,9 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
 .err{color:var(--red);font-size:14px;min-height:21px;margin:10px 0 0}
 .out{background:none;border:0;color:var(--muted);font-size:14px;text-decoration:underline;cursor:pointer;padding:8px 0;margin-top:24px}
 :focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.rtabs{display:flex;gap:6px;background:var(--track);border-radius:14px;padding:4px;margin:14px 0 6px}
+.rtab{flex:1;height:44px;border:0;border-radius:11px;background:transparent;font-weight:600;font-size:16px;cursor:pointer;color:var(--ink-2)}
+.rtab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head>
@@ -98,6 +101,13 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
   const ls = { get(){ try { return localStorage.getItem(KEY); } catch(e) { return null; } }, set(v){ try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch(e) {} } };
   const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   let D = null;
+  const REGIONS = [{ id:"corse", nom:"Corse" }, { id:"guadeloupe", nom:"Guadeloupe" }];
+  const lsR = { get(){ try { return localStorage.getItem("gonfleurs:region"); } catch(e) { return null; } }, set(v){ try { localStorage.setItem("gonfleurs:region", v); } catch(e) {} } };
+  let R = REGIONS.some(r => r.id === lsR.get()) ? lsR.get() : "corse";
+  const regDe = x => (x && x.region) || "corse";
+  const eqR = () => D.equipe.filter(p => regDe(p) === R);
+  const dosR = () => D.dossiers.filter(d => regDe(d) === R);
+  const depR = () => (D.regions && D.regions[R]) || (R === "corse" ? { recus: D.recus || 0, majLe: D.majLe } : { recus: 0 });
 
   async function ouvrir(code){
     const r = await fetch("data.enc.json?t=" + Date.now(), { cache: "no-store" });
@@ -143,12 +153,12 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
   const quand = iso => { const d = iso ? new Date(iso) : null; return d && !isNaN(d) ? d : null; };
 
   function render(){
-    const eq = [...D.equipe].sort((a,b) => b.donnes - a.donnes || a.nom.localeCompare(b.nom,"fr"));
-    const recus = D.recus, distribues = eq.reduce((a,p) => a + p.donnes, 0), poses = stDe(D.dossiers);
+    const eq = eqR().sort((a,b) => b.donnes - a.donnes || a.nom.localeCompare(b.nom,"fr"));
+    const recus = Number(depR().recus) || 0, distribues = eq.reduce((a,p) => a + p.donnes, 0), poses = stDe(dosR());
     const pct = recus ? distribues / recus * 100 : 0;
-    const maj = quand(D.majLe) || quand(D.exporteLe);
+    const maj = quand(depR().majLe) || quand(D.exporteLe);
     const kpi = (l,v) => '<div class="kpi"><p class="l">'+l+'</p><p class="v">'+v+'</p></div>';
-    let h = '<h1>Suivi des gonfleurs</h1><p class="date">' + (maj ? "Mis à jour le " + maj.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + " à " + maj.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : "") + '</p>';
+    let h = '<h1>Suivi des gonfleurs</h1><div class="rtabs" role="tablist" aria-label="Région">' + REGIONS.map(r => '<button type="button" class="rtab" role="tab" data-reg="'+r.id+'" aria-selected="'+(r.id===R)+'">'+esc(r.nom)+'</button>').join("") + '</div><p class="date">' + (maj ? "Mis à jour le " + maj.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + " à " + maj.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : "") + '</p>';
     h += '<section class="kpis" aria-label="Résumé">' + kpi("Reçus au dépôt",recus) + kpi("Distribués",distribues) + kpi("Stations posées",poses) + kpi("Encore en main",distribues - poses) + '</section>';
     h += '<section class="stock" aria-label="Stock restant"><div class="top"><p class="l">Reste au dépôt</p><p class="v">'+(recus - distribues)+'</p></div>'
       + '<div class="meter" role="img" aria-label="'+fr1(pct)+' % distribués"><span style="width:'+Math.min(100,pct).toFixed(1)+'%"></span></div>'
@@ -156,7 +166,7 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
     const max = Math.max(1, ...eq.map(p => p.donnes));
     h += '<section class="card" aria-label="Répartition par personne"><div class="head"><span>Personne</span><span>Gonfleurs et part du total</span></div>';
     eq.forEach(p => {
-      const L = D.dossiers.filter(d => d.poseur === p.id), n = L.length, s = stDe(L);
+      const L = dosR().filter(d => d.poseur === p.id), n = L.length, s = stDe(L);
       const sub = !n ? "Aucun dossier posé pour l'instant"
         : s === n ? plur(n,"dossier")+" "+(n>1?"posés":"posé")+", "+(p.donnes-n)+" encore en main"
         : plur(n,"dossier")+", "+s+" stations posées, "+(p.donnes-s)+" encore en main";
@@ -169,16 +179,17 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
     h += '<button type="button" class="out" id="out">Se déconnecter</button>';
     $("app").innerHTML = h;
     $("q").addEventListener("input", renderDossiers);
+    document.querySelectorAll("[data-reg]").forEach(b => b.addEventListener("click", () => { if (b.dataset.reg === R) return; R = b.dataset.reg; lsR.set(R); render(); window.scrollTo(0, 0); }));
     $("out").addEventListener("click", () => { ls.set(null); D = null; verrou(""); });
     renderDossiers();
   }
 
   function renderDossiers(){
     const q = norm($("q").value);
-    const eq = [...D.equipe].sort((a,b) => b.donnes - a.donnes || a.nom.localeCompare(b.nom,"fr"));
+    const eq = eqR().sort((a,b) => b.donnes - a.donnes || a.nom.localeCompare(b.nom,"fr"));
     const ids = new Set(eq.map(p => p.id));
-    const groups = eq.map(p => ({ nom:p.nom, list:D.dossiers.filter(d => d.poseur === p.id) }));
-    const autres = D.dossiers.filter(d => !ids.has(d.poseur));
+    const groups = eq.map(p => ({ nom:p.nom, list:dosR().filter(d => d.poseur === p.id) }));
+    const autres = dosR().filter(d => !ids.has(d.poseur));
     if (autres.length) groups.push({ nom:"Autre", list:autres });
     let h = "", vu = 0;
     groups.forEach(g => {
@@ -198,7 +209,7 @@ h2{font-weight:700;font-size:22px;margin:30px 0 12px}
       }).join("") + '</ul>';
       h += '</div>';
     });
-    $("dossiers").innerHTML = vu ? h : '<p class="msg" style="border:0">Aucun dossier ne correspond.</p>';
+    $("dossiers").innerHTML = vu ? h : '<p class="msg" style="border:0">' + (q ? "Aucun dossier ne correspond." : "Aucun dossier pour l'instant.") + '</p>';
   }
 
   document.addEventListener("visibilitychange", () => { const c = ls.get(); if (!document.hidden && c && D) charger(c, true); });
