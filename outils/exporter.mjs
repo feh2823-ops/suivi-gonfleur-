@@ -23,6 +23,8 @@ const donnees = {
   regions,
   exporteLe: new Date().toISOString(),
   equipe: col("equipe").map(p => ({ id: p.id, nom: String(p.nom || p.id), donnes: Number(p.donnes) || 0, region: p.region || "corse" })),
+  // Modifications que l'associé doit faire (collection « modifs »).
+  modifs: col("modifs").map(m => ({ texte: String(m.texte || ""), region: m.region || "corse", fait: !!m.fait, creeLe: m.creeLe || null, faitLe: m.faitLe || null })),
   // Seulement ce que les collaborateurs doivent voir : pas de photos ni d'identifiants Drive.
   dossiers: col("dossiers").map(d => ({
     nom: String(d.nom || ""), poseur: d.poseur || "", region: d.region || "corse", stations: Math.max(1, parseInt(d.stations, 10) || 1),
